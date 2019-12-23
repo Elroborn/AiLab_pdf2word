@@ -30,11 +30,6 @@ COPY requirements.txt /demos
 
 RUN pip install -r requirements.txt
 
-RUN apt-get update
-RUN apt-get -y install abiword
-
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y tesseract-ocr
-
 COPY --from=builder /build /demos
 
 ENTRYPOINT [ "/sbin/my_init", "--" ]

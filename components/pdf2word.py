@@ -11,6 +11,7 @@ from pdfminer.pdfinterp import process_pdf
 from pdfminer.converter import TextConverter
 from pdfminer.layout import LAParams
 from docx import Document
+from glob import glob
 
 def read_from_pdf(file_path):
     with open(file_path, 'rb') as file:
@@ -53,19 +54,21 @@ def pdf2word(context):
     args = context.args
     print("*"*20)
     print(args.inputData1)
-    folder = args.inputData1 + "/" + os.listdir(args.inputData1)[0]
+    file_list = glob("%s/*.pdf"%args.inputData1) + glob("%s/*/*.pdf"%args.inputData1)
+    print(file_list)
+
 
     tasks = []
     with ProcessPoolExecutor(max_workers=5) as executor:
-        for file in os.listdir(folder):
-            extension_name = os.path.splitext(file)[1]
+        for file in file_list:
+            extension_name = os.path.splitext(file)[-1]
             if extension_name != '.pdf':
                 continue
-            file_name = os.path.splitext(file)[0]
-            pdf_file = folder + '/' + file
+            file_name = os.path.splitext(file)[0].split('/')[-1]
+
             word_file = "./res" + '/' + file_name + '.docx'
-            print('正在处理: ', file)
-            result = executor.submit(pdf_to_word, pdf_file, word_file)
+            print('processing', file)
+            result = executor.submit(pdf_to_word, file, word_file)
             tasks.append(result)
     while True:
         exit_flag = True
@@ -73,7 +76,7 @@ def pdf2word(context):
             if not task.done():
                 exit_flag = False
         if exit_flag:
-            print('完成')
+            print('done')
             return "res"
 
 
